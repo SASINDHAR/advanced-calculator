@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Advanced Calculator</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #121418;
+        --surface: #1b1f27;
+        --surface-2: #242a34;
+        --surface-3: #303846;
+        --accent: #20c997;
+        --accent-2: #ffd166;
+        --danger: #ff6b6b;
+        --text: #f5f7fb;
+        --muted: #aab3c2;
+        --shadow: 0 18px 45px rgba(0, 0, 0, 0.32);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 12% 18%, rgba(32, 201, 151, 0.14), transparent 28%),
+          linear-gradient(135deg, #121418 0%, #1f242d 48%, #15181f 100%);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(1040px, 100%);
+        padding: 24px;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: minmax(300px, 430px) minmax(260px, 1fr);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .calculator,
+      .history {
+        background: rgba(27, 31, 39, 0.94);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .calculator {
+        padding: 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 760;
+      }
+
+      .mode {
+        color: var(--accent);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .display {
+        min-height: 112px;
+        margin-bottom: 14px;
+        padding: 14px;
+        display: grid;
+        align-content: end;
+        gap: 8px;
+        overflow: hidden;
+        background: #0d1015;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 8px;
+      }
+
+      .expression,
+      .result {
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .expression {
+        min-height: 24px;
+        color: var(--muted);
+        font-size: clamp(1rem, 3vw, 1.2rem);
+      }
+
+      .result {
+        min-height: 46px;
+        color: var(--text);
+        font-size: clamp(2rem, 9vw, 2.8rem);
+        font-weight: 760;
+      }
+
+      .keys {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      button {
+        min-width: 0;
+        min-height: 52px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--surface-2);
+        color: var(--text);
+        cursor: pointer;
+        font: inherit;
+        font-size: 1rem;
+        font-weight: 700;
+        transition: background 140ms ease, transform 140ms ease;
+      }
+
+      button:hover {
+        background: var(--surface-3);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      .operator {
+        color: var(--accent-2);
+      }
+
+      .function {
+        color: #8ecae6;
+      }
+
+      .danger {
+        color: var(--danger);
+      }
+
+      .equals {
+        grid-column: span 2;
+        background: var(--accent);
+        color: #08221a;
+      }
+
+      .equals:hover {
+        background: #35d6a6;
+      }
+
+      .history {
+        min-height: 100%;
+        padding: 18px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 14px;
+      }
+
+      .history header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .history-list {
+        min-height: 280px;
+        max-height: 455px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .history-item {
+        padding: 11px 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .history-expression {
+        color: var(--muted);
+        font-size: 0.86rem;
+        overflow-wrap: anywhere;
+      }
+
+      .history-result {
+        margin-top: 4px;
+        font-size: 1.15rem;
+        font-weight: 760;
+        overflow-wrap: anywhere;
+      }
+
+      .empty {
+        color: var(--muted);
+        display: grid;
+        place-items: center;
+        min-height: 220px;
+        text-align: center;
+      }
+
+      .clear-history {
+        min-height: 42px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 760px) {
+        body {
+          place-items: start center;
+        }
+
+        main {
+          padding: 12px;
+        }
+
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .calculator,
+        .history {
+          padding: 14px;
+        }
+
+        button {
+          min-height: 48px;
+          font-size: 0.92rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="shell">
+        <section class="calculator" aria-label="Calculator">
+          <div class="brand">
+            <h1>Advanced Calculator</h1>
+            <span class="mode">Scientific</span>
+          </div>
+
+          <div class="display" aria-live="polite">
+            <div class="expression" id="expression"></div>
+            <div class="result" id="result">0</div>
+          </div>
+
+          <div class="keys" id="keys">
+            <button class="danger" data-action="clear">AC</button>
+            <button class="danger" data-action="backspace">DEL</button>
+            <button class="function" data-value="(">(</button>
+            <button class="function" data-value=")">)</button>
+            <button class="operator" data-value="/">/</button>
+
+            <button class="function" data-value="sin(">sin</button>
+            <button class="function" data-value="cos(">cos</button>
+            <button class="function" data-value="tan(">tan</button>
+            <button class="function" data-value="sqrt(">sqrt</button>
+            <button class="operator" data-value="*">*</button>
+
+            <button data-value="7">7</button>
+            <button data-value="8">8</button>
+            <button data-value="9">9</button>
+            <button class="function" data-value="pi">pi</button>
+            <button class="operator" data-value="-">-</button>
+
+            <button data-value="4">4</button>
+            <button data-value="5">5</button>
+            <button data-value="6">6</button>
+            <button class="function" data-value="e">e</button>
+            <button class="operator" data-value="+">+</button>
+
+            <button data-value="1">1</button>
+            <button data-value="2">2</button>
+            <button data-value="3">3</button>
+            <button class="function" data-value="log(">log</button>
+            <button class="operator" data-value="^">^</button>
+
+            <button data-value="0">0</button>
+            <button data-value=".">.</button>
+            <button class="function" data-value="ln(">ln</button>
+            <button class="function" data-value="!">!</button>
+            <button class="equals" data-action="equals">=</button>
+          </div>
+        </section>
+
+        <aside class="history" aria-label="Calculation history">
+          <header>
+            <h2>History</h2>
+            <span class="mode" id="history-count">0 saved</span>
+          </header>
+          <div class="history-list" id="history-list"></div>
+          <button class="clear-history" data-action="clear-history">Clear History</button>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      const expressionEl = document.querySelector("#expression");
+      const resultEl = document.querySelector("#result");
+      const keysEl = document.querySelector("#keys");
+      const historyListEl = document.querySelector("#history-list");
+      const historyCountEl = document.querySelector("#history-count");
+      const clearHistoryButton = document.querySelector('[data-action="clear-history"]');
+
+      let expression = "";
+      let result = "0";
+      let history = JSON.parse(localStorage.getItem("calculator-history") || "[]");
+
+      const constants = {
+        pi: Math.PI,
+        e: Math.E
+      };
+
+      const functions = {
+        sin: Math.sin,
+        cos: Math.cos,
+        tan: Math.tan,
+        sqrt: Math.sqrt,
+        log: Math.log10,
+        ln: Math.log,
+        exp: Math.exp
+      };
+
+      function updateDisplay() {
+        expressionEl.textContent = expression;
+        resultEl.textContent = result;
+      }
+
+      function saveHistory() {
+        localStorage.setItem("calculator-history", JSON.stringify(history));
+      }
+
+      function renderHistory() {
+        historyListEl.innerHTML = "";
+        historyCountEl.textContent = `${history.length} saved`;
+
+        if (!history.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "No calculations yet.";
+          historyListEl.append(empty);
+          return;
+        }
+
+        history.slice().reverse().forEach((item) => {
+          const row = document.createElement("button");
+          row.className = "history-item";
+          row.type = "button";
+          row.innerHTML = `
+            <div class="history-expression"></div>
+            <div class="history-result"></div>
+          `;
+          row.querySelector(".history-expression").textContent = item.expression;
+          row.querySelector(".history-result").textContent = item.result;
+          row.addEventListener("click", () => {
+            expression = item.result;
+            result = item.result;
+            updateDisplay();
+          });
+          historyListEl.append(row);
+        });
+      }
+
+      function tokenize(input) {
+        const tokens = [];
+        let i = 0;
+
+        while (i < input.length) {
+          const char = input[i];
+
+          if (/\s/.test(char)) {
+            i += 1;
+            continue;
+          }
+
+          if (/\d|\./.test(char)) {
+            let number = char;
+            i += 1;
+            while (i < input.length && /[\d.]/.test(input[i])) {
+              number += input[i];
+              i += 1;
+            }
+            tokens.push({ type: "number", value: Number(number) });
+            continue;
+          }
+
+          if (/[a-z]/i.test(char)) {
+            let name = char;
+            i += 1;
+            while (i < input.length && /[a-z]/i.test(input[i])) {
+              name += input[i];
+              i += 1;
+            }
+            if (name in constants) {
+              tokens.push({ type: "number", value: constants[name] });
+            } else if (name in functions) {
+              tokens.push({ type: "function", value: name });
+            } else {
+              throw new Error(`Unknown name: ${name}`);
+            }
+            continue;
+          }
+
+          if ("+-*/^()!".includes(char)) {
+            tokens.push({ type: char === "(" || char === ")" ? "paren" : "operator", value: char });
+            i += 1;
+            continue;
+          }
+
+          throw new Error(`Unexpected character: ${char}`);
+        }
+
+        return addImplicitMultiplication(tokens);
+      }
+
+      function addImplicitMultiplication(tokens) {
+        const output = [];
+
+        for (let i = 0; i < tokens.length; i += 1) {
+          const current = tokens[i];
+          const previous = output[output.length - 1];
+
+          if (previous && shouldMultiply(previous, current)) {
+            output.push({ type: "operator", value: "*" });
+          }
+          output.push(current);
+        }
+
+        return output;
+      }
+
+      function shouldMultiply(previous, current) {
+        const previousCanEnd = previous.type === "number" || previous.value === ")" || previous.value === "!";
+        const currentCanStart = current.type === "number" || current.type === "function" || current.value === "(";
+        return previousCanEnd && currentCanStart;
+      }
+
+      function toRpn(tokens) {
+        const output = [];
+        const operators = [];
+        const precedence = { "!": 5, "^": 4, "u-": 3, "*": 2, "/": 2, "+": 1, "-": 1 };
+        const rightAssociative = new Set(["^", "u-"]);
+
+        tokens.forEach((token, index) => {
+          if (token.type === "number") {
+            output.push(token);
+            return;
+          }
+
+          if (token.type === "function") {
+            operators.push(token);
+            return;
+          }
+
+          if (token.value === "(") {
+            operators.push(token);
+            return;
+          }
+
+          if (token.value === ")") {
+            while (operators.length && operators[operators.length - 1].value !== "(") {
+              output.push(operators.pop());
+            }
+            if (!operators.length) {
+              throw new Error("Mismatched parentheses");
+            }
+            operators.pop();
+            if (operators.length && operators[operators.length - 1].type === "function") {
+              output.push(operators.pop());
+            }
+            return;
+          }
+
+          let op = token.value;
+          const previous = tokens[index - 1];
+          if (op === "-" && (!previous || previous.type === "operator" || previous.value === "(")) {
+            op = "u-";
+          }
+
+          while (operators.length) {
+            const top = operators[operators.length - 1];
+            if (top.value === "(" || top.type === "function") {
+              if (top.type === "function") {
+                output.push(operators.pop());
+                continue;
+              }
+              break;
+            }
+            const shouldPop = rightAssociative.has(op)
+              ? precedence[op] < precedence[top.value]
+              : precedence[op] <= precedence[top.value];
+            if (!shouldPop) {
+              break;
+            }
+            output.push(operators.pop());
+          }
+
+          operators.push({ type: "operator", value: op });
+        });
+
+        while (operators.length) {
+          const op = operators.pop();
+          if (op.value === "(" || op.value === ")") {
+            throw new Error("Mismatched parentheses");
+          }
+          output.push(op);
+        }
+
+        return output;
+      }
+
+      function factorial(value) {
+        if (!Number.isInteger(value) || value < 0) {
+          throw new Error("Factorial needs a positive integer");
+        }
+
+        let total = 1;
+        for (let i = 2; i <= value; i += 1) {
+          total *= i;
+        }
+        return total;
+      }
+
+      function evaluate(input) {
+        const stack = [];
+        const rpn = toRpn(tokenize(input));
+
+        rpn.forEach((token) => {
+          if (token.type === "number") {
+            stack.push(token.value);
+            return;
+          }
+
+          if (token.type === "function") {
+            if (!stack.length) {
+              throw new Error("Missing function value");
+            }
+            stack.push(functions[token.value](stack.pop()));
+            return;
+          }
+
+          if (token.value === "u-") {
+            stack.push(-stack.pop());
+            return;
+          }
+
+          if (token.value === "!") {
+            stack.push(factorial(stack.pop()));
+            return;
+          }
+
+          const b = stack.pop();
+          const a = stack.pop();
+          if (a === undefined || b === undefined) {
+            throw new Error("Incomplete expression");
+          }
+
+          if (token.value === "+") stack.push(a + b);
+          if (token.value === "-") stack.push(a - b);
+          if (token.value === "*") stack.push(a * b);
+          if (token.value === "/") stack.push(a / b);
+          if (token.value === "^") stack.push(a ** b);
+        });
+
+        if (stack.length !== 1 || !Number.isFinite(stack[0])) {
+          throw new Error("Invalid result");
+        }
+
+        return formatResult(stack[0]);
+      }
+
+      function formatResult(value) {
+        const rounded = Math.round((value + Number.EPSILON) * 1e12) / 1e12;
+        return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+      }
+
+      function calculate() {
+        if (!expression.trim()) {
+          result = "0";
+          updateDisplay();
+          return;
+        }
+
+        try {
+          const evaluated = evaluate(expression);
+          result = evaluated;
+          history.push({ expression, result });
+          history = history.slice(-25);
+          saveHistory();
+          renderHistory();
+          expression = evaluated;
+        } catch (error) {
+          result = "Error";
+        }
+
+        updateDisplay();
+      }
+
+      function appendValue(value) {
+        expression += value;
+        result = expression || "0";
+        updateDisplay();
+      }
+
+      keysEl.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+
+        const action = button.dataset.action;
+        if (action === "clear") {
+          expression = "";
+          result = "0";
+        } else if (action === "backspace") {
+          expression = expression.slice(0, -1);
+          result = expression || "0";
+        } else if (action === "equals") {
+          calculate();
+          return;
+        } else {
+          appendValue(button.dataset.value);
+          return;
+        }
+
+        updateDisplay();
+      });
+
+      clearHistoryButton.addEventListener("click", () => {
+        history = [];
+        saveHistory();
+        renderHistory();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (/[\d+\-*/().^]/.test(event.key)) {
+          appendValue(event.key);
+        } else if (event.key === "Enter") {
+          event.preventDefault();
+          calculate();
+        } else if (event.key === "Backspace") {
+          expression = expression.slice(0, -1);
+          result = expression || "0";
+          updateDisplay();
+        } else if (event.key === "Escape") {
+          expression = "";
+          result = "0";
+          updateDisplay();
+        }
+      });
+
+      updateDisplay();
+      renderHistory();
+    </script>
+  </body>
+</html>
