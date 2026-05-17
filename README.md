@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Advanced Calculator
 
 A Python calculator project with a CustomTkinter GUI, basic arithmetic helpers,
@@ -9,25 +8,25 @@ calculation history.
 
 ```text
 advanced_calculator/
-├── main.py
-├── requirements.txt
-├── README.md
-├── calculator/
-│   ├── __init__.py
-│   ├── basic.py
-│   ├── scientific.py
-│   ├── history.py
-│   ├── converter.py
-│   └── utils.py
-├── gui/
-│   ├── __init__.py
-│   ├── app.py
-│   ├── themes.py
-│   └── widgets.py
-├── data/
-│   └── history.json
-└── assets/
-    └── icon.png
+|-- main.py
+|-- requirements.txt
+|-- README.md
+|-- calculator/
+|   |-- __init__.py
+|   |-- basic.py
+|   |-- scientific.py
+|   |-- history.py
+|   |-- converter.py
+|   `-- utils.py
+|-- gui/
+|   |-- __init__.py
+|   |-- app.py
+|   |-- themes.py
+|   `-- widgets.py
+|-- data/
+|   `-- history.json
+`-- assets/
+    `-- icon.png
 ```
 
 ## Run
@@ -36,6 +35,3 @@ advanced_calculator/
 pip install -r requirements.txt
 python main.py
 ```
-=======
-# calculator
->>>>>>> cc9a05877fafeb8c9be187207128ee8fcaf62d7f
