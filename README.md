@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Advanced Calculator
 
 A Python calculator project with a CustomTkinter GUI, basic arithmetic helpers,
@@ -35,3 +36,6 @@ advanced_calculator/
 pip install -r requirements.txt
 python main.py
 ```
+=======
+# calculator
+>>>>>>> cc9a05877fafeb8c9be187207128ee8fcaf62d7f
